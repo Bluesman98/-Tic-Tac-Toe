@@ -166,11 +166,12 @@ const Gameboard = (function(document){
 
  
   let testBoard = [
-      ['X', 0, 'X'],
-      ['O', 'X', 'X'],
-      ['O', 0, 0]
+      ['X', 'X', 'O'],
+      ['X', 'O', 0],
+      [0, 0, 0]
     ];
   let scoresArray = []
+  let movesArray = []
  
   
   function nextDepth (board,player){
@@ -187,9 +188,8 @@ const Gameboard = (function(document){
       
         //console.log(temp[item])
         if(checkVictory(temp[item]) == true) { 
-          temp[item][0][0] = "END";
+          //temp[item][0][0] = "END";
           //movesArray.push(temp[item])
-          
           scores.push(score(player))
         
         }
@@ -219,13 +219,85 @@ const Gameboard = (function(document){
     console.log(board)
     if(counter >= 0) {
       counter--
+      movesArray.push(board)
       return Plan(nextDepth(board,player2),player2,player1)
      
     }
     else { counter--;console.log(counter); return board}
   }
 
-  
+  /*function bestMove(scoresArray) {
+    let i = scoresArray.length - 2;
+    for(i ; i >= 0; i--){
+      for(item in scoresArray[i]){
+        if(scoresArray[i][item] ==0 ){
+          if
+          console.log(scoresArray[i][item]);
+        //}
+      }
+    }
+  }*/
+  function max(array){
+    let max = array[0]
+    for(item in array){
+      if(array[item]>max) max = array[item]
+    }
+    return max;
+  }
+
+  function min(array){
+    let min = array[0]
+    for(item in array){
+      if(array[item]<min) min = array[item]
+    }
+    return min;
+  }
+
+  function containsZero(array){
+    let boolean = false
+    for(item in array){
+      if(array[item] == 0) boolean=true;
+    }
+    return boolean
+  }
+
+  function copyRow(A,array,depth){
+    for(item in A){
+      array[array.length-depth-2][item] = JSON.parse(JSON.stringify(A[item]));
+    }
+  }
+  function bestMove(array,depth,string){
+    //if(length)(){}
+    let B = JSON.parse(JSON.stringify(array[array.length-depth-1]));
+    let A = JSON.parse(JSON.stringify(array[array.length-depth-2]));
+    let minmax = string;
+    let a = 0;
+    let b = depth +1;
+    if(containsZero(A) == true ){
+      for(item in A){
+        if(A[item] == 0){
+          if(minmax == "max") {
+            A[item] += max(B.slice(a,b));
+          }
+          else {
+            A[item] += min(B.slice(a,b));
+          }
+          a=b
+          b+=depth+1;    
+        }
+      }
+      if(minmax == "max") minmax = "min"
+      else minmax = "max"
+     // console.log(A)
+      copyRow(A,array,depth);
+      //console.log(array)
+      //array[array.length-depth-1] = A
+      //console.log(array)
+    return bestMove(array,(depth+1),minmax)
+    }
+    else {console.log(array); return array}
+  }
+
   const log = () => {
 
     //console.log(testBoard) 
@@ -238,9 +310,25 @@ const Gameboard = (function(document){
   //console.log(z)
    
   Plan(testBoard,Player1,Player2)
+  array = JSON.parse(JSON.stringify(scoresArray));
+  let y = 1000
+  for(item in scoresArray){
+    scoresArray[item] =  scoresArray[item].map(x => x*y)
+    y = y/10
+  }
   console.log(scoresArray)
-  //console.log(checkVictory(testBoard))
+  x = bestMove(scoresArray,0,"max")
+  scoresArray[0] = (max(x[1]))
+  console.log(scoresArray[1])
+  index = scoresArray[1].indexOf(scoresArray[0])
+  console.log(index)
+  console.log(movesArray[1][index])
+  //console.log(movesArray[1])
 
+
+  //bestMove(scoresArray,1,"min")
+  //console.log(max([-10,0]))
+  //console.log(checkVictory(testBoard))
    //y = Plan(x)
    //console.log(y)
    //console.log(find(testBoard,0))

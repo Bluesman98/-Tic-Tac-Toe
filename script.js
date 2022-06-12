@@ -101,19 +101,19 @@ const Gameboard = (function(document){
     diag.push(second);
     return diag;
   }
-  const allEqual = arr => arr.every( v => v === (arr[0] && v !=0 ))
+   const allEqual = arr => arr.every( v => v === (arr[0]))
 
 
   const checkVictory = (array) => {
-    if(find(array,0).length <5) return false
+    if(find(array,0).length > 5) return false
     let col = columns(array)
     let diag = diagonal(array); 
     for(i = 0; i < array.length; i++){
 
-        if(allEqual(array[i]) ) return true
-        if(allEqual(col[i])) return true
+        if(allEqual(array[i]) && array[i][0] != 0) return true
+        if(allEqual(col[i]) && col[i][0] != 0) return true
         if(i<=1){
-          if(allEqual(diag[i])) return true
+          if(allEqual(diag[i]) && diag[i][0]) return true
         }
       }
     
@@ -166,9 +166,9 @@ const Gameboard = (function(document){
 
  
   let testBoard = [
-      ['X', 0, 0],
-      ['O', 0, 0],
-      [0, 0, 'X']
+      ['X', 0, 'X'],
+      ['O', 'X', 'X'],
+      ['O', 0, 0]
     ];
   let scoresArray = []
  
@@ -237,9 +237,9 @@ const Gameboard = (function(document){
   //z = nextDepth(y,Player1)
   //console.log(z)
    
-  //Plan(testBoard,Player1,Player2)
-  //console.log(scoresArray)
-  console.log(checkVictory(testBoard))
+  Plan(testBoard,Player1,Player2)
+  console.log(scoresArray)
+  //console.log(checkVictory(testBoard))
 
    //y = Plan(x)
    //console.log(y)

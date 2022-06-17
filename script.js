@@ -1,9 +1,10 @@
 
 const Gameboard = (function(document){
-  let scoresArray = []
-  let newScores = []
-  let movesArray = []
-  let bestScores = []
+
+  const main = document.querySelector('.main');
+  const msg = document.createElement('p')
+  msg.textContent = ''
+  main.append(msg)
 
   let gameboard =[
     [0, 0, 0],
@@ -20,11 +21,50 @@ const Gameboard = (function(document){
   const Player = (name,id) => {
     return { name , id };
   };
-  let  Player1 = Player("George",1)
-  let Player2 = Player("AI",2) 
 
-  const createDom = () => {
-    const main = document.querySelector('.main');
+
+  const Input = () => {
+    const container = document.createElement('form')
+    const form = document.createElement('div')
+    form.classList.add("container")
+    container.append(form)
+    for(let i = 1; i<3; i++){
+      const div = document.createElement('div')
+      const label = document.createElement('label')
+      div.append(label)
+      const input = document.createElement('input')
+      input.placeholder = `Player ${i} Name`
+      input.id = `player${i}`
+      div.append(input)
+      form.append(div)
+    }
+    const btn = document.createElement('button')
+    btn.textContent = "Play"
+    container.append(btn)
+    main.append(container)
+    btn.addEventListener('click',e =>{
+
+      let p1 = document.querySelector('#player1')
+      let p2 = document.querySelector('#player2')
+
+      if(p1.value == "") p1.value = "Player 1"
+      if(p2.value == "") p2.value = "Player 2"
+
+      let  Player1 = Player(p1.value,1)
+      let Player2 = Player(p2.value,2) 
+      createDom(Player1,Player2)
+      play(Player1,Player2)
+      main.removeChild(container)
+    })
+
+  }
+
+  const createDom = (Player1,Player2) => {
+  //  const main = document.querySelector('.main');
+    let btn = document.createElement('button')
+    btn.textContent = 'Reset';
+    btn.classList.add("reset")
+
     const board = document.createElement('div');
     board.classList.add("gameboard");
     main.appendChild(board);
@@ -39,43 +79,39 @@ const Gameboard = (function(document){
       gameboard[i][j] = cell
       board.appendChild(cell);
       }
+      main.append(btn)
     }
+    btn.addEventListener('click',e =>{
+      main.removeChild(btn)
+      Gameboard.reset();
+      createDom(Player1,Player2)
+      Gameboard.play(Player1,Player2);
+     
+    })
   }
   const reset = () => {
     const main = document.querySelector('.main');
     const board = document.querySelector(".gameboard")
     main.removeChild(board);
-
-    let gameboard =[
+    msg.textContent = ''
+   
+     gameboard =[
       [0, 0, 0],
       [0, 0, 0],
       [0, 0, 0]
     ];
   
-    let boardArray =[
+     boardArray =[
       [0, 0, 0],
       [0, 0, 0],
       [0, 0, 0]
     ];
-    createDom();
+   // createDom();
+    
   }
 
-  const printBoard = (board) => {
-    
-    let counter = 0
-    for(let i=0; i <= 2; i++){
-      for(let j=0; j <= 2; j++){
-        let div = document.querySelector(`#c${counter}`)
-        if(board[i][j] != 0)div.textContent = board[i][j]   
-        counter++
-
-          
-        }
-      } 
-    }
-  
-
-  const play = () => {
+  const play = (player1,player2) => {
+    //const main = document.querySelector('.main');
     let currentPlayer = 1;
     for(let i=0; i < 3; i++){
       for(let j=0; j < 3; j++){
@@ -83,56 +119,26 @@ const Gameboard = (function(document){
         if(e.target.textContent == ''){
           if (currentPlayer % 2 != 0) {
             e.target.textContent = "X"
+            e.target.style.color = '#ffe13f'
             boardArray[i][j] = "X"
           }
           else {
             e.target.textContent = "O"
+            e.target.style.color = 'rgb(255, 139, 248)'
             boardArray[i][j] = "O"
           }
           
           currentPlayer++
-          if(checkVictory(boardArray)) console.log("WIN CONDITION")
-          if (currentPlayer > Math.pow(boardArray.length ,2)) console.log("TIE")
+          if(checkVictory(boardArray)) {
+            if(currentPlayer%2!=0) msg.textContent = `${player2.name} Wins`
+            else msg.textContent = `${player1.name} Wins`
+          }
+          if(find(boardArray,0) == false) { msg.textContent = "It's A Tie"}
           }
         })
       } 
     }   
   }
-
-  const playWithAI = () => {
-
-    printBoard(boardArray)
-    for(let i=0; i < 3; i++){
-      for(let j=0; j < 3; j++){
-        gameboard[i][j].addEventListener('click',e =>{
-        if(e.target.textContent == ''){
-            e.target.textContent = 'X'
-            boardArray[i][j] = 'X'
-          
-          if(checkVictory(boardArray)) {console.log("PLAYER 1 WINS"); return 0;}
-          if(find(boardArray,0) == false) {console.log("ITS A TIE"); return 1;}
-          else {
-          y = find(boardArray,0).length
-          console.log(y)
-          console.log(boardArray)
-          x = playAI(boardArray,Player1,Player2,y)
-          console.log(x)
-
-          boardArray = JSON.parse(JSON.stringify(x));
-
-          printBoard(boardArray)
-          scoresArray = []
-          newScores = []
-          movesArray = []
-          bestScores = []
-          if(checkVictory(boardArray)) {console.log("AI WINS"); return 0}}
-          if(find(boardArray,0) == false) {console.log("ITS A TIE"); return 1;}
-        
-        }
-        })
-    }   
-  }
-}
 
   const columns = (array) => {
     let cols = []
@@ -176,27 +182,6 @@ const Gameboard = (function(document){
     return false
   }
 
-  function generateMoves(board,player){
-    let moves = [] ;
-    let x =[]
-   
-    for(item in board){
-         index = find(board[item],0);
-        for(let i=0; i<index.length; i++){
-          let temp = JSON.parse(JSON.stringify(board[item]));
-          let a = index[i][0];
-          let b = index[i][1];
-          if(player.id == 2) temp[a][b] = 'O';
-          else  temp[a][b] = 'X';
-          x.push(temp);   
-         } 
-          
-    }
-    moves.push(x)
-    return moves[0]
-   
-  }
-
   function find(array ,item){
     let indexArray = []
     for(let i = 0; i < array.length; i++){
@@ -213,194 +198,14 @@ const Gameboard = (function(document){
     return indexArray;
   }
   
-  function score(player) {
-    if(player.name == "AI") return   -10;
-    return 10;
-  }
 
-  function nextDepth (board,player){
-    let movesArray = []
-    temp = JSON.parse(JSON.stringify(board));
-    let scores = []
-    if(find(temp,0).length >=8 ) movesArray = (generateMoves([temp],player)) 
-    else {
-      for(item in temp){
-        let x = [] 
-        if(checkVictory(temp[item]) == true) { 
-          scores.push(score(player))
-          }
-        else { 
-          scores.push(0);
-          x = ((generateMoves([temp[item]],player)));
-          for(item in x) {
-            movesArray.push(x[item]);
-          }
-        }  
-      }
-    
-    }
-    scoresArray.push(scores)
-    return movesArray
-  }
 
-  function Plan (board,player1,player2,counter) {
-    if(counter >= 1) {
-      movesArray.push(board)
-      return Plan(nextDepth(board,player2),player2,player1,(counter-1))
-    }
-    else {counter-1; 
-      let scores = []
-      for(item in board){
-        if(checkVictory(board[item]) == true) { 
-        scores.push(score(player2))
-        }
-        else scores.push(0)
-      }
-      scoresArray.push(scores)
-      return board
-    }
-  }
-
-  function max(array){
-    let max = array[0]
-    for(item in array){
-      if(array[item]>max) max = array[item]
-    }
-    return max;
-  }
-
-  function min(array){
-    let min = array[0]
-    for(item in array){
-      if(array[item]<min) min = array[item]
-    }
-    return min;
-  }
-
-  function containsZero(array){
-    let boolean = false
-    for(item in array){
-      if(array[item] == 0) boolean=true;
-    }
-    return boolean
-  }
-
-  function bestMove(array,depth,string){
-    if(array[array.length-depth-2].length <2) return array
-    let A = JSON.parse(JSON.stringify(array[array.length-depth-2]))
-    let B = JSON.parse(JSON.stringify(array[array.length-depth-1]))
-    let minmax = string
-    let increment = find(movesArray[movesArray.length-depth-2][0],0).length -1
-    console.log('increment')
-    console.log(increment)
-    let a =0
-    let b = increment+1
-    console.log(A)
-    console.log(B)
-    for(item in A){
-      console.log(a)
-      console.log(b)
-      if(A[item] == 0){
-        if(increment  != -1){
-          if(string == "max") {
-            A[item] += max(B.slice(a,b))
-          }
-          else {
-            A[item] += min(B.slice(a,b))
-          }
-          a=b+1
-          b+=increment+1;  
-        }
-        else{
-           A+=B[a]
-           a++
-           b=-1
-        }       
-      }
-    }
-    A = A.map(a => a+1)
-    bestScores.push(A)
-    console.log(A)
-    array.splice(array.length-depth-2,1,A)
-    if(minmax == "max") minmax = "min"
-    else minmax = "max"
-    return bestMove(array,depth+1,minmax)
-    } 
-  const playAI = (array,Player1,Player2,counter) =>{
-    
-    scoresArray = []
-    newScores = []
-    movesArray = []
-    bestScores = []
-    let move =[]
-    let index
-    if (counter == 8 && array[0][0] =="X"){
-      move = [
-        ["X",0,0],
-        [0,0,0],
-        [0, 0, "O"]
-      ];
-       
-    }
-   else if (counter == 8 && array[0][2] =="X"){
-      move = [
-        [0,0,"X"],
-        [0,0,0],
-        ["O", 0, 0]
-      ];
-       
-    }
-    else if(counter == 8 && array[2][0] =="X"){
-      move = [
-        [0,0,"O"],
-        [0,0,0],
-        ["X", 0, 0]
-      ];
-    }
-
-    else if(counter == 8 && array[1][1]!="X"){
-      move = JSON.parse(JSON.stringify(array));
-      move[1][1] = "O"
-    }
-    else if(counter==8){
-      move = [
-        [0,0,"O"],
-        [0,"X",0],
-        [0, 0, 0]
-      ];
-    }
-   else{
-    if (counter>6) counter = 6;
-  Plan([array],Player1,Player2,counter)
-  console.log(movesArray)
-  console.log(scoresArray)
-  let s = 100000
-  for(item in scoresArray){
-    for (i in scoresArray[item]){
-      scoresArray[item][i] *=s
-     
-    }
-    s=s/10} 
- newScores = JSON.parse(JSON.stringify(scoresArray));JSON
-   console.log(newScores)
-  if(counter%2 != 0) {bestMove(newScores,0,"min");   }
- else if (counter%2 == 0) {bestMove(newScores,0,"max");  }
-   console.log(bestScores)
-   console.log(newScores)
-  index = newScores[1].indexOf(max(newScores[1]))
-  move = movesArray[1][index]
-  console.log(move)
-  }
- return move
-  }
- 
-
-  return{createDom,play,reset,playWithAI}
+  return{createDom,play,reset,Input,}
   
 })(document);
 
 
 //Gameboard.reset();
-Gameboard.createDom();
+//Gameboard.createDom();
 //Gameboard.play();
-Gameboard.playWithAI();
+Gameboard.Input();
